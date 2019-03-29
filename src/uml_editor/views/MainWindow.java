@@ -12,6 +12,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
+import uml_editor.Program;
 import uml_editor.enums.EditorMode;
 import uml_editor.views.components.TagJButton;
 import uml_editor.views.panels.ElementPanel;
@@ -29,7 +30,7 @@ public class MainWindow extends JFrame {
     public MainWindow() {
         this.setTitle("Wayne UML Editor");
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.setSize(1280, 720);
+        this.setSize(800, 600);
         this.add(new JPanel() {
             {
                 setLayout(new BorderLayout());

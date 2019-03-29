@@ -100,8 +100,17 @@ public class Element {
 		g.drawRect(x - _half_width, y - _half_height, _width, _height);
 		g.drawLine(x - _half_width, y - _half_height, x+_half_width, y+_half_height);
 		g.drawLine(x - _half_width, y+_half_height, x+_half_width, y - _half_height);
-
-
+	}
+	
+	public void DrawInfo(Graphics2D g, Point Origin) {
+		var x = Origin.x+_x;var y = Origin.y+_y;
+		g.drawString("[width: "+getWidth(), x+_half_width, y - _half_height);
+		g.drawString(" height: "+getHeight(), x+_half_width, y - _half_height+15);
+		g.drawString(" x: "+getX(), x+_half_width, y - _half_height+30);
+		g.drawString(" y: "+getY(), x+_half_width, y - _half_height+45);
+		g.drawString(" depth: "+getDepth(), x+_half_width, y - _half_height+60);
+		g.drawString(" isMouseOver: "+getIsMouseOver(), x+_half_width, y - _half_height+75);
+		g.drawString(" ]", x+_half_width, y - _half_height+90);
 	}
 	
 	public void init() {

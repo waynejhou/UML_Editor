@@ -25,6 +25,7 @@ import uml_editor.views.MainWindow;
 import uml_editor.views.components.elements.ClassElement;
 import uml_editor.views.components.elements.Element;
 import uml_editor.views.components.elements.JointPointElement;
+import uml_editor.views.components.elements.LineElement;
 import uml_editor.views.components.enums.ElementState;
 import uml_editor.enums.EditorMode;
 
@@ -38,19 +39,42 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 		super();
 		addMouseMotionListener(this);
 		addMouseListener(this);
-		var ele = new JointPointElement();
+		var ele = new Element();
+		ele.init();
+		ele.setDepth(0);
 		Elements.add(ele);
+		
+		var ele2 = new ClassElement();
+		ele2.setPosition(-100, 0);
+		ele2.init();
+		ele2.setDepth(1);
+		Elements.add(ele2);
+		
+		var ele3 = new ClassElement();
+		ele3.setPosition(100, 0);
+		ele3.init();
+		ele3.setDepth(2);
+		Elements.add(ele3);
+		
+		var ele4 = new LineElement();
+		ele4.setPosition(0, 100);
+		ele4.init();
+		ele4.setDepth(3);
+		Elements.add(ele4);
+		
+		
 	}
 	
 	@Override
 	public void paint(Graphics g) {
 		// TODO Auto-generated method stub
-		//super.paint(g);
+		super.paint(g);
 		cls(g);
 		var origin = getOrigin();
 		drawBase(g);
 		for (var e : Elements) {
 			e.Draw((Graphics2D)g, origin);
+			e.DrawInfo((Graphics2D)g, origin);
 		}
 		if(_PreviewElement!=null)
 			_PreviewElement.Draw((Graphics2D)g, origin);
