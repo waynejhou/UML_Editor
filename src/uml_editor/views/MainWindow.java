@@ -58,6 +58,7 @@ public class MainWindow extends JFrame {
     }};
     
     EditorMode _mode = null;
+
     public EditorMode getMode(){return _mode;}
     void setMode(EditorMode value){
         _mode = value;
