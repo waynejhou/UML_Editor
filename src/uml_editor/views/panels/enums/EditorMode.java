@@ -1,4 +1,4 @@
-package uml_editor.enums;
+package uml_editor.views.panels.enums;
 
 public enum EditorMode {
     _select,

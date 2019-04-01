@@ -9,9 +9,7 @@ import java.util.List;
 
 import uml_editor.views.components.elements.interfaces.ICanBeJointed;
 
-public class ClassElement extends Element implements ICanBeJointed {
-
-
+public class UseCaseElement extends Element implements ICanBeJointed {
 	
 	ArrayList<JointElement> _joints = null;
 	
@@ -58,7 +56,7 @@ public class ClassElement extends Element implements ICanBeJointed {
 		int x = getX() + o.x /*- w / 2*/;
 		int y = getY() + o.y /*- h / 2*/;
 		g.setColor(Color.white);
-		g.fillRect(x, y, w, h);
+		g.fillArc(x,y,w,h,0,360);
 		
 		g.setColor(new Color(0, 0, 0));
 		g.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -68,14 +66,9 @@ public class ClassElement extends Element implements ICanBeJointed {
 		if(getIsSelected()) {
 			g.setColor(new Color(255, 0, 0));
 		}
-
-		g.drawRect(x, y, w, h);
-
-		int x0 = x, y0 = y + 50, x1 = x + w;
-		while (y0-y <= h - 30) {
-			g.drawLine(x0, y0, x1 , y0);
-			y0 += 30;
-		}
+		
+		g.drawArc(x,y,w,h,0,360);
+		
 		g.setColor(new Color(0, 0, 0));
 		g.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		if(getIsIinted()) {
@@ -83,8 +76,6 @@ public class ClassElement extends Element implements ICanBeJointed {
 				j.StartToDraw(g, new Point(x,y));
 			}
 		}
+		
 	}
-
-
-
 }

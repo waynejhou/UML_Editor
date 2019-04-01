@@ -13,9 +13,9 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
 import uml_editor.Program;
-import uml_editor.enums.EditorMode;
 import uml_editor.views.components.TagJButton;
 import uml_editor.views.panels.ElementPanel;
+import uml_editor.views.panels.enums.EditorMode;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 
 public class MainWindow extends JFrame {
 
+	ElementPanel _ElePanel;
+	
     public MainWindow() {
         this.setTitle("Wayne UML Editor");
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -35,10 +37,10 @@ public class MainWindow extends JFrame {
             {
                 setLayout(new BorderLayout());
                 add(panel_westJPanel, BorderLayout.WEST);
-                add(new ElementPanel(), BorderLayout.CENTER);
+				add(_ElePanel = new ElementPanel(), BorderLayout.CENTER);
             }
         });
-        setMode(EditorMode._class);
+        setMode(EditorMode._select);
     }
     
     List<TagJButton> modeBtns =
@@ -57,13 +59,12 @@ public class MainWindow extends JFrame {
         }
     }};
     
-    EditorMode _mode = null;
 
-    public EditorMode getMode(){return _mode;}
+    public EditorMode getMode(){return _ElePanel.getMode();}
     void setMode(EditorMode value){
-        _mode = value;
+    	_ElePanel.setMode(value);
         for(var btn: modeBtns) {
-        	if(btn.getTag()!=_mode) {
+        	if(btn.getTag()!=getMode()) {
         		btn.setText(btn.getTag().toString().substring(1));
         	}
         	else {

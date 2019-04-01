@@ -1,246 +1,613 @@
 package uml_editor.views.panels;
 
+import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collector;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.swing.JPanel;
 import javax.swing.event.MenuDragMouseListener;
 
+
 import uml_editor.Program;
 import uml_editor.views.MainWindow;
 import uml_editor.views.components.elements.ClassElement;
 import uml_editor.views.components.elements.Element;
-import uml_editor.views.components.elements.JointPointElement;
+import uml_editor.views.components.elements.JointElement;
 import uml_editor.views.components.elements.LineElement;
-import uml_editor.views.components.enums.ElementState;
-import uml_editor.enums.EditorMode;
+import uml_editor.views.components.elements.UseCaseElement;
+import uml_editor.views.components.elements.interfaces.ICanBeJointed;
+import uml_editor.views.panels.enums.EditorMode;
 
+public class ElementPanel extends JPanel implements MouseListener, MouseMotionListener {
 
-public class ElementPanel extends JPanel implements MouseListener, MouseMotionListener{
-	public ArrayList<Element> Elements = new ArrayList<Element>();
-	
-	Element _PreviewElement = null;
-	
 	public ElementPanel() {
 		super();
-		addMouseMotionListener(this);
 		addMouseListener(this);
-		var ele = new Element();
-		ele.init();
+		addMouseMotionListener(this);
+		var ele = new ClassElement();
 		ele.setDepth(0);
-		Elements.add(ele);
-		
-		var ele2 = new ClassElement();
-		ele2.setPosition(-100, 0);
-		ele2.init();
-		ele2.setDepth(1);
-		Elements.add(ele2);
-		
-		var ele3 = new ClassElement();
-		ele3.setPosition(100, 0);
-		ele3.init();
-		ele3.setDepth(2);
-		Elements.add(ele3);
-		
-		var ele4 = new LineElement();
-		ele4.setPosition(0, 100);
-		ele4.init();
-		ele4.setDepth(3);
-		Elements.add(ele4);
-		
-		
+		ele.setPt1(new Point(0, 0));
+		ele.setPt2(new Point(100, 150));
+		ele.init();
+		ele.setIsVisible(true);
+		_elements.add(ele);
 	}
-	
+
 	@Override
 	public void paint(Graphics g) {
-		// TODO Auto-generated method stub
-		super.paint(g);
-		cls(g);
-		var origin = getOrigin();
-		drawBase(g);
-		for (var e : Elements) {
-			e.Draw((Graphics2D)g, origin);
-			e.DrawInfo((Graphics2D)g, origin);
+		if (!_isFirstPainted) {
+			_isFirstPainted = true;
+			OnFirstPaint();
 		}
-		if(_PreviewElement!=null)
-			_PreviewElement.Draw((Graphics2D)g, origin);
+		var origin = getOrigin();
+		g.drawImage(getBackGround(), 0, 0, null);
+		g.drawImage(getStaticGround(), 0, 0, null);
+		g.drawImage(getDynamicGround(), 0, 0, new Color(0, 0, 0, 0), null);
 	}
-	
-	void cls(Graphics g) {
+
+	private boolean _isFirstPainted = false;
+
+	private void OnFirstPaint() {
+
+	}
+
+	private AlphaComposite _composite = AlphaComposite.getInstance(AlphaComposite.CLEAR, 0.0f);
+	private BufferedImage _backGnd = null;
+
+	private BufferedImage getBackGround() {
+		if (_backGnd != null && _backGnd.getWidth() == getWidth() && _backGnd.getHeight() == getHeight()) {
+			return _backGnd;
+		}
+		_backGnd = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+		var g = (Graphics2D) _backGnd.getGraphics();
+		var origin = getOrigin();
 		g.setColor(Color.white);
 		g.fillRect(0, 0, getWidth(), getHeight());
-	}
-
-	Point getOrigin() {
-		return new Point(getWidth()/2, getHeight()/2);
-	}
-	
-	void drawBase(Graphics g) {
-		var origin = getOrigin();
 		g.setColor(new Color(165, 165, 165));
-		g.drawRect(5, 5, getWidth()-6, getHeight()-6);
+		g.drawRect(5, 5, getWidth() - 10, getHeight() - 10);
 		g.drawLine(origin.x, 0, origin.x, getHeight());
-		g.drawLine(0, origin.y, getWidth(),origin.y );
+		g.drawLine(0, origin.y, getWidth(), origin.y);
+		return _backGnd;
 	}
 
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
-	}
+	boolean _isForceUpdStGnd = false;
+	private BufferedImage _stGnd = null;
 
-	int _dragTempPtX = 0;
-	int _dragTempPtY = 0;
-	int _dragEleTempPtX = 0;
-	int _dragEleTempPtY = 0;
-	boolean _dragingElementStart = false;
-	Element _mouseOveringElement = null;
-	Element _selectedElement = null;
-	
-	@Override
-	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
+	private BufferedImage getStaticGround() {
+		if (_stGnd != null && !_isForceUpdStGnd && _stGnd.getWidth() == getWidth()
+				&& _stGnd.getHeight() == getHeight()) {
+			return _stGnd;
+		}
+		if (_stGnd == null || _stGnd.getWidth() != getWidth() || _stGnd.getHeight() != getHeight()) {
+			_stGnd = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+		} else {
+			Graphics2D g2d = (Graphics2D) _stGnd.getGraphics();
+			var oc = g2d.getComposite();
+			g2d.setComposite(_composite);
+			g2d.setColor(new Color(0, 0, 0, 0));
+			g2d.fillRect(0, 0, getWidth(), getHeight());
+			g2d.setComposite(oc);
+		}
+		var g = (Graphics2D) _stGnd.getGraphics();
 		var origin = getOrigin();
-		switch (Program.MainWin.getMode()) {
-		case _class:
-			_PreviewElement = new ClassElement();
-			_dragTempPtX = e.getX();
-			_dragTempPtY = e.getY();
-			break;
-		case _select:
-			for(var ele: Elements)
-				ele.setIsSelected(false);
-			if(_mouseOveringElement!=null) {
-				_mouseOveringElement.setIsSelected(true);
-				_selectedElement = _mouseOveringElement;
-				if(_selectedElement.isPointIn(e.getX()-origin.x, e.getY()-origin.y)) {
-					_dragTempPtX = e.getX();
-					_dragTempPtY = e.getY();
-					_dragEleTempPtX = _selectedElement.getX();
-					_dragEleTempPtY = _selectedElement.getY();
-					_dragingElementStart = true;
-				}
+		ArrayList<Element> clone = (ArrayList<Element>) _elements.clone();
+		Collections.reverse(clone);
+		for (var e : clone) {
+			if(e!=_now_mouseOveringElement && e!=_now_selectedElement)
+				e.StartToDraw((Graphics2D) g, origin);
+		}
+		_isForceUpdStGnd = false;
+		return _stGnd;
+	}
+
+	boolean _isForceUpdDynGnd = false;
+	private BufferedImage _dynGnd = null;
+
+	private BufferedImage getDynamicGround() {
+		if (_dynGnd != null && !_isForceUpdDynGnd && _dynGnd.getWidth() == getWidth()
+				&& _dynGnd.getHeight() == getHeight()) {
+			return _dynGnd;
+		}
+		if (_dynGnd == null || _dynGnd.getWidth() != getWidth() || _dynGnd.getHeight() != getHeight()) {
+			_dynGnd = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+		} else {
+			Graphics2D g2d = (Graphics2D) _dynGnd.getGraphics();
+			var oc = g2d.getComposite();
+			g2d.setComposite(_composite);
+			g2d.setColor(new Color(0, 0, 0, 0));
+			g2d.fillRect(0, 0, getWidth(), getHeight());
+			g2d.setComposite(oc);
+		}
+		var g = (Graphics2D) _dynGnd.getGraphics();
+		var origin = getOrigin();
+		if (_dynElement != null) {
+			if(_dynElement instanceof JointElement) {
+				_dynElement.StartToDraw((Graphics2D) g, new Point(
+						((JointElement)_dynElement).getOwner().getX()+origin.x,
+						((JointElement)_dynElement).getOwner().getY()+origin.y
+						));
+			}else if(_dynElement instanceof LineElement) {
+				_dynElement.StartToDraw((Graphics2D) g, new Point(
+						origin.x,
+						origin.y
+						));
+			}
+			else {
+				_dynElement.StartToDraw((Graphics2D) g, origin);
+			}
+			
+		}
+		if (_now_selectedElement != null) {
+			if(_now_selectedElement instanceof JointElement) {
+				_now_selectedElement.StartToDraw((Graphics2D) g, new Point(
+						((JointElement)_now_selectedElement).getOwner().getX()+origin.x,
+						((JointElement)_now_selectedElement).getOwner().getY()+origin.y
+						));
 			}else {
-				if(_selectedElement!=null) {
-					_selectedElement.setIsSelected(false);
-					_selectedElement = null;
-				}
+				_now_selectedElement.StartToDraw((Graphics2D) g, origin);
 			}
-			break;
-		default:
-			break;
 		}
-		updatePanel();
+		if (_now_mouseOveringElement != null) {
+			if(_now_mouseOveringElement instanceof JointElement) {
+				_now_mouseOveringElement.StartToDraw((Graphics2D) g, new Point(
+						((JointElement)_now_mouseOveringElement).getOwner().getX()+origin.x,
+						((JointElement)_now_mouseOveringElement).getOwner().getY()+origin.y
+						));
+			}else {
+				_now_mouseOveringElement.StartToDraw((Graphics2D) g, origin);
+			}
+		}
+
+
+		_isForceUpdDynGnd = false;
+		return _dynGnd;
 	}
 
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
-		switch (Program.MainWin.getMode()) {
-		case _class:
-			for(var ele: Elements) {
-				ele.incDepth();
+	private EditorMode _mode = null;
+
+	public EditorMode getMode() {
+		return _mode;
+	}
+
+	public void setMode(EditorMode value) {
+		if(_mode!=null) {
+			switch (_mode) {
+			case _select:
+				selectionSession_De_Activate();
+				break;
+			case _class:
+				break;
+			case _association:
+			case _generalization:
+			case _composition:
+				newLineSession_De_Activate();
+				break;
+			default:
+				break;
 			}
-			_PreviewElement.init();
-			Elements.add(_PreviewElement);
-			Collections.sort(Elements, (l,r)->l.getDepth()-r.getDepth());
-			_PreviewElement = null;
-			break;
+		}
+		_mode = value;
+		switch (_mode) {
 		case _select:
-			_dragingElementStart = false;
 			break;
-		default:
-			break;
-		}
-
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseDragged(MouseEvent e) {
-		// TODO Auto-generated method stub
-		var origin = getOrigin();
-		switch (Program.MainWin.getMode()) {
 		case _class:
-			if(_PreviewElement !=null) {
-				var wid = e.getX()-_dragTempPtX;
-				var hei = e.getY()-_dragTempPtY;
-				_PreviewElement.setPosition(
-						e.getX()-origin.x-wid/2,
-						e.getY()-origin.y-hei/2);
-				_PreviewElement.setSize(Math.abs(e.getX()-_dragTempPtX), Math.abs(e.getY()-_dragTempPtY));
-			}
-			updatePanel();
 			break;
-		case _select:
-			var wid = e.getX()-_dragTempPtX;
-			var hei = e.getY()-_dragTempPtY;
-			if(_selectedElement!=null&&_dragingElementStart) {
-				_selectedElement.setPosition(
-						_dragEleTempPtX +( e.getX()-_dragTempPtX),
-						_dragEleTempPtY +( e.getY()-_dragTempPtY));
-			}
-			updatePanel();
+		case _association:
+		case _generalization:
+		case _composition:
+			newLineSession_Activate();
 			break;
 		default:
 			break;
 		}
+	}
+
+	private Point getOrigin() {
+		return new Point(getWidth() / 2, getHeight() / 2);
+	}
+
+	@Override
+	public String toString() {
+		var ret = "Debug Info";
+		return ret;
 	}
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		var origin = getOrigin();
-		switch (Program.MainWin.getMode()) {
+		switch (_mode) {
+		case _class:
+		case _user_case:
+			newShapeElementSession_MMoved();
+			break;
 		case _select:
-			boolean hovered = false;
-			for (var ele : Elements ) {
-				if(!hovered && ele.isPointIn(e.getX()-origin.x, e.getY()-origin.y)) {
-					ele.setIsMouseOver(true);
-					hovered = true;
-					_mouseOveringElement = ele;
-				}
-				else if(ele.getIsMouseOver()){
-					ele.setIsMouseOver(false);
-				}
-			}
-			if(!hovered)
-				_mouseOveringElement = null;
-			updatePanel();
+			selectionSession_MMoved(e.getPoint());
+			break;
+		case _association:
+		case _generalization:
+		case _composition:
+			newLineSessionn_MMoved(e.getPoint());
 			break;
 		default:
 			break;
 		}
 	}
-	
-	long _lastFrameTime = java.lang.System.currentTimeMillis();
-	void updatePanel() {
-		if(java.lang.System.currentTimeMillis()-_lastFrameTime>=60) {
-			_lastFrameTime = java.lang.System.currentTimeMillis();
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		switch (_mode) {
+		case _class:
+		case _user_case:
+			if (e.getButton() == MouseEvent.BUTTON1) {
+				newShapeElementSession_LMPressed(e.getPoint(), _mode);
+			}
+			break;
+		case _select:
+			if (e.getButton() == MouseEvent.BUTTON1) {
+				selectionSession_LMPressed(e.getPoint());
+			}
+			break;
+		case _association:
+		case _generalization:
+		case _composition:
+			if (e.getButton() == MouseEvent.BUTTON1) {
+				newLineSession_LMPressed(e.getPoint(), _mode);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		switch (_mode) {
+		case _class:
+		case _user_case:
+			newShapeElementSession_MDragged(e.getPoint(), _mode);
+			break;
+		case _select:
+			selectionSession_MDragged(e.getPoint());
+			break;
+		case _association:
+		case _generalization:
+		case _composition:
+			newLineSession_MDragged(e.getPoint());
+			break;
+		default:
+			break;
+		}
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		switch (_mode) {
+		case _class:
+		case _user_case:
+			if (e.getButton() == MouseEvent.BUTTON1) {
+				newShapeElementSession_LMReleased(e.getPoint(), _mode);
+			}
+			break;
+		case _select:
+			if (e.getButton() == MouseEvent.BUTTON1) {
+				selectionSession_LMReleased(e.getPoint());
+			}
+			break;
+		case _association:
+		case _generalization:
+		case _composition:
+			if (e.getButton() == MouseEvent.BUTTON1) {
+				newLineSession_LMReleased(e.getPoint());
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+	}
+
+	private ArrayList<Element> _elements = new ArrayList<Element>();
+	private List<? extends ICanBeJointed> getCanBeJointElements(){
+		return _elements.stream()
+				.filter(x->x instanceof ICanBeJointed)
+				.map(x->(ICanBeJointed)x)
+				.collect(Collectors.toList());
+	}
+	private List<JointElement> getJoints(){
+		return getCanBeJointElements().stream()
+				.map(x->( x).getAllJointElements())
+				.flatMap(List::stream)
+				.collect(Collectors.toList());
+	}
+	private Element _dynElement = null;
+
+	private Element _now_mouseOveringElement = null;
+	private Element _now_selectedElement = null;
+
+	private void newShapeElementSession_MMoved() {
+
+	}
+
+	private void newShapeElementSession_LMPressed(Point mpt, EditorMode mode) {
+		var o = getOrigin();
+		if (mode == EditorMode._class) {
+			_dynElement = new ClassElement();
+			_dynElement.setIsVisible(true);
+			_dynElement.setPt1(mpt.x - o.x, mpt.y - o.y);
+		}
+		if (mode == EditorMode._user_case) {
+			_dynElement = new UseCaseElement();
+			_dynElement.setIsVisible(true);
+			_dynElement.setPt1(mpt.x - o.x, mpt.y - o.y);
+		}
+
+	}
+
+	private void newShapeElementSession_MDragged(Point mpt, EditorMode mode) {
+		var o = getOrigin();
+		if (_dynElement != null) {
+			_dynElement.setPt2(mpt.x - o.x, mpt.y - o.y);
+			_isForceUpdDynGnd = true;
 			update(getGraphics());
 		}
 	}
+
+	private void newShapeElementSession_LMReleased(Point mpt, EditorMode mode) {
+		var o = getOrigin();
+		_dynElement.setPt2(mpt.x - o.x, mpt.y - o.y);
+		for (var ele : _elements) {
+			ele.incDepth();
+		}
+		_dynElement.setDepth(0);
+		_dynElement.init();
+		_elements.add(_dynElement);
+		Collections.sort(_elements, (l, r) -> l.getDepth() - r.getDepth());
+		_dynElement = null;
+		_isForceUpdStGnd = true;
+		_isForceUpdDynGnd = true;
+		update(getGraphics());
+	}
+
+	private void selectionSession_De_Activate() {
+		if(_now_mouseOveringElement!=null) {
+			_now_mouseOveringElement.setIsMouseOver(false);
+			_now_mouseOveringElement = null;
+		}
+		if(_now_selectedElement!=null) {
+			_now_selectedElement.setIsSelected(false);
+			_now_selectedElement = null;
+		}
+
+		_isForceUpdStGnd = true;
+		_isForceUpdDynGnd = true;
+		update(getGraphics());
+	}
+	
+	private void selectionSession_MMoved(Point mpt) {
+		var o = getOrigin();
+		Element _post_mouseOveringElement = null;
+		for (var ele : _elements) {
+			if (ele.isPointIn(mpt.x - o.x, mpt.y - o.y)) {
+				_post_mouseOveringElement = ele;
+				break;
+			}
+		}
+		if (_now_mouseOveringElement != _post_mouseOveringElement) {
+			if (_now_mouseOveringElement != null) {
+				_now_mouseOveringElement.setIsMouseOver(false);
+				_now_mouseOveringElement = null;
+			}
+			if (_post_mouseOveringElement != null) {
+				_now_mouseOveringElement = _post_mouseOveringElement;
+				_now_mouseOveringElement.setIsMouseOver(true);
+			}
+			_isForceUpdDynGnd = true;
+			update(getGraphics());
+		}
+	}
+
+	private boolean _dragingElementStart = false;
+	private int _dragTempPtX = 0;
+	private int _dragTempPtY = 0;
+	private int _draggedElePtX = 0;
+	private int _draggedElePtY = 0;
+	
+	private void selectionSession_LMPressed(Point mpt) {
+		if (_now_selectedElement != null) {
+			_now_selectedElement.setIsSelected(false);
+			_now_selectedElement = null;
+			_isForceUpdStGnd = true;
+			_isForceUpdDynGnd = true;
+		}
+		if (_now_mouseOveringElement != null) {
+			_now_mouseOveringElement.setIsSelected(true);
+			_now_selectedElement = _now_mouseOveringElement;
+			_isForceUpdStGnd = true;
+			_isForceUpdDynGnd = true;
+			_dragTempPtX = mpt.x;
+			_dragTempPtY = mpt.y;
+			_draggedElePtX = _now_selectedElement.getX();
+			_draggedElePtY = _now_selectedElement.getY();
+			_dragingElementStart = true;
+		}
+		if (_isForceUpdStGnd)
+			update(getGraphics());
+	}
+
+	private void selectionSession_MDragged(Point mpt) {
+		if (_dragingElementStart) {
+			_now_selectedElement.setX( (mpt.x-_dragTempPtX)+_draggedElePtX );
+			_now_selectedElement.setY( (mpt.y-_dragTempPtY)+_draggedElePtY );
+			_isForceUpdDynGnd = true;
+			update(getGraphics());
+		}
+	}
+
+	private void selectionSession_LMReleased(Point mpt) {
+		_isForceUpdStGnd = true;
+		_isForceUpdDynGnd = true;
+		_dragingElementStart = false;
+		update(getGraphics());
+
+	}
+
+
+	private void newLineSession_Activate() {
+		for(var jele : getJoints())
+			jele.setIsVisible(true);
+	}
+	private void newLineSession_De_Activate() {
+		for(var jele : getJoints())
+			jele.setIsVisible(false);
+	}
+	
+	private void newLineSessionn_MMoved(Point mpt) {
+		var o = getOrigin();
+		Element _post_mouseOveringElement = null;
+		for (var jele : getJoints()) {
+			if (jele.isPointIn(mpt.x - o.x, mpt.y - o.y)) {
+				_post_mouseOveringElement = jele;
+				break;
+			}
+		}
+		if (_now_mouseOveringElement != _post_mouseOveringElement) {
+			if (_now_mouseOveringElement != null) {
+				_now_mouseOveringElement.setIsMouseOver(false);
+				_now_mouseOveringElement = null;
+			}
+			if (_post_mouseOveringElement != null) {
+				_now_mouseOveringElement = _post_mouseOveringElement;
+				_now_mouseOveringElement.setIsMouseOver(true);
+			}
+			_isForceUpdDynGnd = true;
+			update(getGraphics());
+		}
+	}
+	private void newLineSession_LMPressed(Point mpt, EditorMode mode) {
+		if (_now_selectedElement != null) {
+			_now_selectedElement.setIsSelected(false);
+			_now_selectedElement = null;
+			_isForceUpdStGnd = true;
+			_isForceUpdDynGnd = true;
+		}
+		if (_now_mouseOveringElement != null) {
+			_now_mouseOveringElement.setIsSelected(true);
+			_now_selectedElement = _now_mouseOveringElement;
+			_isForceUpdStGnd = true;
+			_isForceUpdDynGnd = true;
+			if (mode == EditorMode._association) {
+				var line = new LineElement();
+				line.setFromJoint((JointElement) _now_selectedElement);
+				_dynElement = line;
+				_dynElement.setIsVisible(true);
+			}
+			if (mode == EditorMode._generalization) {
+				var line = new LineElement();
+				line.setFromJoint((JointElement) _now_selectedElement);
+				_dynElement = line;
+				_dynElement.setIsVisible(true);
+			}
+			if (mode == EditorMode._composition) {
+				var line = new LineElement();
+				line.setFromJoint((JointElement) _now_selectedElement);
+				_dynElement = line;
+				_dynElement.setIsVisible(true);
+			}
+			
+		}
+		if (_isForceUpdStGnd)
+			update(getGraphics());
+	}
+	private void newLineSession_MDragged(Point mpt) {
+		var o = getOrigin();
+		Element _post_mouseOveringElement = null;
+		for (var jele : getJoints()) {
+			if (jele.isPointIn(mpt.x - o.x, mpt.y - o.y)) {
+				_post_mouseOveringElement = jele;
+				break;
+			}
+		}
+		if (_now_mouseOveringElement != _post_mouseOveringElement) {
+			if (_now_mouseOveringElement != null) {
+				_now_mouseOveringElement.setIsMouseOver(false);
+				_now_mouseOveringElement = null;
+			}
+			if (_post_mouseOveringElement != null) {
+				_now_mouseOveringElement = _post_mouseOveringElement;
+				_now_mouseOveringElement.setIsMouseOver(true);
+			}
+			_isForceUpdDynGnd = true;
+			update(getGraphics());
+		}
+		if (_dynElement != null) {
+			_dynElement.setPt2(mpt.x - o.x, mpt.y - o.y);
+			_isForceUpdDynGnd = true;
+			update(getGraphics());
+		}
+	}
+	private void newLineSession_LMReleased(Point mpt) {
+		if (_now_selectedElement != null) {
+			_now_selectedElement.setIsSelected(false);
+			_now_selectedElement = null;
+			_isForceUpdStGnd = true;
+			_isForceUpdDynGnd = true;
+		}
+		if (_now_mouseOveringElement != null) {
+			_now_mouseOveringElement.setIsSelected(true);
+			_now_selectedElement = _now_mouseOveringElement;
+			_isForceUpdStGnd = true;
+			_isForceUpdDynGnd = true;
+			if(_dynElement!=null) {
+				((LineElement)_dynElement).setToJoint((JointElement) _now_selectedElement);
+				for (var ele : _elements) {
+					ele.incDepth();
+				}
+				_dynElement.setDepth(0);
+				_dynElement.init();
+				_elements.add(_dynElement);
+				Collections.sort(_elements, (l, r) -> l.getDepth() - r.getDepth());
+				_dynElement = null;
+			}
+
+		}else {
+			if(_dynElement!=null) {
+				_dynElement.setIsVisible(false);
+				_isForceUpdStGnd = true;
+				_isForceUpdDynGnd = true;
+				_dynElement = null;
+			}
+
+		}
+		if (_isForceUpdStGnd)
+			update(getGraphics());
+	}
+	
+	
 }
