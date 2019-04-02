@@ -13,27 +13,17 @@ public class JointElement extends Element {
 		setOwner(owner);
 	}
 
-	private Element _owner = null;
-
-	public Element getOwner() {
-		return _owner;
-	}
-
-	public void setOwner(Element value) {
-		_owner = value;
-	}
-
 	public Point getCenterPoint() {
-		if(_owner!=null)
+		if(getOwner()==null)
 			return new Point(getX()+getWidth()/2,getY()+getHeight()/2 );
 		return new Point(
-				_owner.getX()+getX()+getWidth()/2,
-				_owner.getY()+getY()+getHeight()/2 );
+				getOwner().getX()+getX()+getWidth()/2,
+				getOwner().getY()+getY()+getHeight()/2 );
 	}
 	
 	@Override
 	public boolean isPointIn(int x, int y) {
-		return super.isPointIn(x-_owner.getX(), y-_owner.getY());
+		return super.isPointIn(x-getOwner().getX(), y-getOwner().getY());
 	}
 
 	@Override

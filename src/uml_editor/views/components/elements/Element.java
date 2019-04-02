@@ -8,7 +8,7 @@ import java.awt.Point;
 public class Element {
 
 	private boolean _isIinted = false;
-
+	
 	public boolean getIsIinted() {
 		return _isIinted;
 	}
@@ -17,6 +17,16 @@ public class Element {
 		_isIinted = true;
 	}
 
+	private Element _owner = null;
+
+	public Element getOwner() {
+		return _owner;
+	}
+
+	public void setOwner(Element value) {
+		_owner = value;
+	}
+	
 	private int _depth = 0;
 
 	public int getDepth() {

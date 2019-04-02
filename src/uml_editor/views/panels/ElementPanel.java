@@ -8,11 +8,13 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.util.ArrayList;
@@ -23,11 +25,14 @@ import java.util.stream.Collectors;
 import javax.swing.JPanel;
 import javax.swing.event.MenuDragMouseListener;
 
-
 import uml_editor.Program;
 import uml_editor.views.MainWindow;
+import uml_editor.views.components.elements.AssociationLineElement;
 import uml_editor.views.components.elements.ClassElement;
+import uml_editor.views.components.elements.CompositionLineElement;
 import uml_editor.views.components.elements.Element;
+import uml_editor.views.components.elements.GeneralizationLineElement;
+import uml_editor.views.components.elements.GroupElement;
 import uml_editor.views.components.elements.JointElement;
 import uml_editor.views.components.elements.LineElement;
 import uml_editor.views.components.elements.UseCaseElement;
@@ -109,7 +114,7 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 		ArrayList<Element> clone = (ArrayList<Element>) _elements.clone();
 		Collections.reverse(clone);
 		for (var e : clone) {
-			if(e!=_now_mouseOveringElement && e!=_now_selectedElement)
+			if (e != _now_mouseOveringElement && e != _now_selectedElement)
 				e.StartToDraw((Graphics2D) g, origin);
 		}
 		_isForceUpdStGnd = false;
@@ -137,43 +142,35 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 		var g = (Graphics2D) _dynGnd.getGraphics();
 		var origin = getOrigin();
 		if (_dynElement != null) {
-			if(_dynElement instanceof JointElement) {
-				_dynElement.StartToDraw((Graphics2D) g, new Point(
-						((JointElement)_dynElement).getOwner().getX()+origin.x,
-						((JointElement)_dynElement).getOwner().getY()+origin.y
-						));
-			}else if(_dynElement instanceof LineElement) {
-				_dynElement.StartToDraw((Graphics2D) g, new Point(
-						origin.x,
-						origin.y
-						));
-			}
-			else {
+			if (_dynElement instanceof JointElement) {
+				_dynElement.StartToDraw((Graphics2D) g,
+						new Point(((JointElement) _dynElement).getOwner().getX() + origin.x,
+								((JointElement) _dynElement).getOwner().getY() + origin.y));
+			} else if (_dynElement instanceof LineElement) {
+				_dynElement.StartToDraw((Graphics2D) g, origin);
+			} else {
 				_dynElement.StartToDraw((Graphics2D) g, origin);
 			}
-			
+
 		}
 		if (_now_selectedElement != null) {
-			if(_now_selectedElement instanceof JointElement) {
-				_now_selectedElement.StartToDraw((Graphics2D) g, new Point(
-						((JointElement)_now_selectedElement).getOwner().getX()+origin.x,
-						((JointElement)_now_selectedElement).getOwner().getY()+origin.y
-						));
-			}else {
+			if (_now_selectedElement instanceof JointElement) {
+				_now_selectedElement.StartToDraw((Graphics2D) g,
+						new Point(((JointElement) _now_selectedElement).getOwner().getX() + origin.x,
+								((JointElement) _now_selectedElement).getOwner().getY() + origin.y));
+			} else {
 				_now_selectedElement.StartToDraw((Graphics2D) g, origin);
 			}
 		}
 		if (_now_mouseOveringElement != null) {
-			if(_now_mouseOveringElement instanceof JointElement) {
-				_now_mouseOveringElement.StartToDraw((Graphics2D) g, new Point(
-						((JointElement)_now_mouseOveringElement).getOwner().getX()+origin.x,
-						((JointElement)_now_mouseOveringElement).getOwner().getY()+origin.y
-						));
-			}else {
+			if (_now_mouseOveringElement instanceof JointElement) {
+				_now_mouseOveringElement.StartToDraw((Graphics2D) g,
+						new Point(((JointElement) _now_mouseOveringElement).getOwner().getX() + origin.x,
+								((JointElement) _now_mouseOveringElement).getOwner().getY() + origin.y));
+			} else {
 				_now_mouseOveringElement.StartToDraw((Graphics2D) g, origin);
 			}
 		}
-
 
 		_isForceUpdDynGnd = false;
 		return _dynGnd;
@@ -186,7 +183,7 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 	}
 
 	public void setMode(EditorMode value) {
-		if(_mode!=null) {
+		if (_mode != null) {
 			switch (_mode) {
 			case _select:
 				selectionSession_De_Activate();
@@ -274,7 +271,6 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 		}
 	}
 
-
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		switch (_mode) {
@@ -334,18 +330,19 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 	}
 
 	private ArrayList<Element> _elements = new ArrayList<Element>();
-	private List<? extends ICanBeJointed> getCanBeJointElements(){
-		return _elements.stream()
-				.filter(x->x instanceof ICanBeJointed)
-				.map(x->(ICanBeJointed)x)
+
+	private List<? extends ICanBeJointed> getCanBeJointElements() {
+		return _elements.stream().filter(x -> x instanceof ICanBeJointed).map(x -> (ICanBeJointed) x)
 				.collect(Collectors.toList());
 	}
-	private List<JointElement> getJoints(){
-		return getCanBeJointElements().stream()
-				.map(x->( x).getAllJointElements())
-				.flatMap(List::stream)
+
+	private List<JointElement> getJoints() {
+		return getCanBeJointElements().stream().map(x -> (x).getAllJointElements()).flatMap(List::stream)
 				.collect(Collectors.toList());
 	}
+	
+	private ArrayList<Element> _groupingElements = new ArrayList<Element>();
+
 	private Element _dynElement = null;
 
 	private Element _now_mouseOveringElement = null;
@@ -396,20 +393,25 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 	}
 
 	private void selectionSession_De_Activate() {
-		if(_now_mouseOveringElement!=null) {
+		if (_now_mouseOveringElement != null) {
 			_now_mouseOveringElement.setIsMouseOver(false);
 			_now_mouseOveringElement = null;
 		}
-		if(_now_selectedElement!=null) {
+		if (_now_selectedElement != null) {
 			_now_selectedElement.setIsSelected(false);
 			_now_selectedElement = null;
 		}
-
+		if(_groupingElements.size()>0) {
+			for(var gele : _groupingElements) {
+				gele.setIsSelected(false);
+			}
+			_groupingElements.clear();
+		}
 		_isForceUpdStGnd = true;
 		_isForceUpdDynGnd = true;
 		update(getGraphics());
 	}
-	
+
 	private void selectionSession_MMoved(Point mpt) {
 		var o = getOrigin();
 		Element _post_mouseOveringElement = null;
@@ -434,17 +436,24 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 	}
 
 	private boolean _dragingElementStart = false;
+	private boolean _groupingElementStart = false;
 	private int _dragTempPtX = 0;
 	private int _dragTempPtY = 0;
 	private int _draggedElePtX = 0;
 	private int _draggedElePtY = 0;
-	
+
 	private void selectionSession_LMPressed(Point mpt) {
 		if (_now_selectedElement != null) {
 			_now_selectedElement.setIsSelected(false);
 			_now_selectedElement = null;
 			_isForceUpdStGnd = true;
 			_isForceUpdDynGnd = true;
+		}
+		if(_groupingElements.size()>0) {
+			for(var gele : _groupingElements) {
+				gele.setIsSelected(false);
+			}
+			_groupingElements.clear();
 		}
 		if (_now_mouseOveringElement != null) {
 			_now_mouseOveringElement.setIsSelected(true);
@@ -456,6 +465,12 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 			_draggedElePtX = _now_selectedElement.getX();
 			_draggedElePtY = _now_selectedElement.getY();
 			_dragingElementStart = true;
+		} else {
+			var o = getOrigin();
+			_dynElement = new GroupElement();
+			_dynElement.setIsVisible(true);
+			_dynElement.setPt1(mpt.x - o.x, mpt.y - o.y);
+			_groupingElementStart = true;
 		}
 		if (_isForceUpdStGnd)
 			update(getGraphics());
@@ -463,31 +478,62 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 
 	private void selectionSession_MDragged(Point mpt) {
 		if (_dragingElementStart) {
-			_now_selectedElement.setX( (mpt.x-_dragTempPtX)+_draggedElePtX );
-			_now_selectedElement.setY( (mpt.y-_dragTempPtY)+_draggedElePtY );
+			_now_selectedElement.setX((mpt.x - _dragTempPtX) + _draggedElePtX);
+			_now_selectedElement.setY((mpt.y - _dragTempPtY) + _draggedElePtY);
+			_isForceUpdDynGnd = true;
+			update(getGraphics());
+		}
+		if (_groupingElementStart) {
+			var o = getOrigin();
+			_dynElement.setPt2(mpt.x - o.x, mpt.y - o.y);
 			_isForceUpdDynGnd = true;
 			update(getGraphics());
 		}
 	}
 
 	private void selectionSession_LMReleased(Point mpt) {
+		_dragingElementStart = false;
+
+		var o = getOrigin();
+		/*
+		 * _dynElement.setPt2(mpt.x - o.x, mpt.y - o.y); for (var ele : _elements) {
+		 * ele.incDepth(); }
+		 */
+		// _dynElement.setDepth(0);
+		// _dynElement.init();
+		// _elements.add(_dynElement);
+		// Collections.sort(_elements, (l, r) -> l.getDepth() - r.getDepth());
+		/*
+		 * for(var e : getCanBeJointElements()) {
+		 * if(((GroupElement)_dynElement).getIsIncluded(ele)) }
+		 */
+		if (_groupingElementStart) {
+			for (var jele : getCanBeJointElements()) {
+				if (((GroupElement) _dynElement).getIsIncluded((Element) jele)) {
+					((Element) jele).setIsSelected(true);
+					_groupingElements.add(((Element) jele));
+				}
+					
+			}
+			_groupingElementStart = false;
+		}
+		_dynElement = null;
 		_isForceUpdStGnd = true;
 		_isForceUpdDynGnd = true;
-		_dragingElementStart = false;
 		update(getGraphics());
 
 	}
 
-
 	private void newLineSession_Activate() {
-		for(var jele : getJoints())
+		for (var jele : getJoints())
 			jele.setIsVisible(true);
 	}
+
 	private void newLineSession_De_Activate() {
-		for(var jele : getJoints())
+		for (var jele : getJoints())
 			jele.setIsVisible(false);
 	}
-	
+
 	private void newLineSessionn_MMoved(Point mpt) {
 		var o = getOrigin();
 		Element _post_mouseOveringElement = null;
@@ -510,6 +556,7 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 			update(getGraphics());
 		}
 	}
+
 	private void newLineSession_LMPressed(Point mpt, EditorMode mode) {
 		if (_now_selectedElement != null) {
 			_now_selectedElement.setIsSelected(false);
@@ -523,28 +570,29 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 			_isForceUpdStGnd = true;
 			_isForceUpdDynGnd = true;
 			if (mode == EditorMode._association) {
-				var line = new LineElement();
+				var line = new AssociationLineElement();
 				line.setFromJoint((JointElement) _now_selectedElement);
 				_dynElement = line;
 				_dynElement.setIsVisible(true);
 			}
 			if (mode == EditorMode._generalization) {
-				var line = new LineElement();
+				var line = new GeneralizationLineElement();
 				line.setFromJoint((JointElement) _now_selectedElement);
 				_dynElement = line;
 				_dynElement.setIsVisible(true);
 			}
 			if (mode == EditorMode._composition) {
-				var line = new LineElement();
+				var line = new CompositionLineElement();
 				line.setFromJoint((JointElement) _now_selectedElement);
 				_dynElement = line;
 				_dynElement.setIsVisible(true);
 			}
-			
+
 		}
 		if (_isForceUpdStGnd)
 			update(getGraphics());
 	}
+
 	private void newLineSession_MDragged(Point mpt) {
 		var o = getOrigin();
 		Element _post_mouseOveringElement = null;
@@ -572,6 +620,7 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 			update(getGraphics());
 		}
 	}
+
 	private void newLineSession_LMReleased(Point mpt) {
 		if (_now_selectedElement != null) {
 			_now_selectedElement.setIsSelected(false);
@@ -584,8 +633,8 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 			_now_selectedElement = _now_mouseOveringElement;
 			_isForceUpdStGnd = true;
 			_isForceUpdDynGnd = true;
-			if(_dynElement!=null) {
-				((LineElement)_dynElement).setToJoint((JointElement) _now_selectedElement);
+			if (_dynElement != null) {
+				((LineElement) _dynElement).setToJoint((JointElement) _now_selectedElement);
 				for (var ele : _elements) {
 					ele.incDepth();
 				}
@@ -596,8 +645,8 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 				_dynElement = null;
 			}
 
-		}else {
-			if(_dynElement!=null) {
+		} else {
+			if (_dynElement != null) {
 				_dynElement.setIsVisible(false);
 				_isForceUpdStGnd = true;
 				_isForceUpdDynGnd = true;
@@ -608,6 +657,5 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 		if (_isForceUpdStGnd)
 			update(getGraphics());
 	}
-	
-	
+
 }
