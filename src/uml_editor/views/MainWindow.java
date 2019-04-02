@@ -1,36 +1,26 @@
 package uml_editor.views;
 
 import java.awt.BorderLayout;
-import java.awt.Button;
-import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
-
-import uml_editor.Program;
-import uml_editor.views.components.TagJButton;
-import uml_editor.views.panels.ElementPanel;
-import uml_editor.views.panels.enums.EditorMode;
-
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import javax.swing.border.BevelBorder;
+
+import uml_editor.views.components.TagJButton;
+import uml_editor.views.panels.ElementPanel;
+import uml_editor.views.panels.enums.EditorMode;
 
 public class MainWindow extends JFrame {
 
@@ -40,19 +30,13 @@ public class MainWindow extends JFrame {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setSize(800, 600);
         this.setJMenuBar(new JMenuBar() {{
-        	add(new JMenu("File") {{
-        	}});
+        	add(new JMenu("File"));
         	add(new JMenu("Edit") {{
-        		setMnemonic(KeyEvent.VK_E);
-        		setAction(new AbstractAction("Edit") {{
-        			putValue(Action.MNEMONIC_KEY, KeyEvent.VK_E);
-        		}
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					System.out.println("sad");
-					((JMenu)e.getSource()).setPopupMenuVisible(true);
-				}});
-        		add(new JMenuItem("Group"));
+        		add(new JMenuItem("Group Elements") {{
+        			addActionListener(e->{
+        				_ElePanel.setAGroup();
+        			});
+        		}});
         		add(new JMenuItem("EditName"));
         	}});
         }});

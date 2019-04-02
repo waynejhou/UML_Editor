@@ -149,8 +149,12 @@ public class Element {
 		g.fillRect(x, y, w, h);
 	}
 
-	public void DrawInfo(Graphics2D g) {
-
+	public void DrawInfo(Graphics2D g, Point origin) {
+		var x0 = getX()+getWidth()+origin.x + 5;
+		var y0 = getY()+origin.y;
+		for(var str : toString().lines().toArray())
+			g.drawString(str.toString(), x0, y0+=14);
+		g.setColor(Color.white);
 	}
 
 	public boolean isPointIn(int x, int y) {
@@ -162,5 +166,17 @@ public class Element {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return
+				String.format("[depth: %d]\n", getDepth()) + 
+				String.format("[X: %d]\n", getX()) + 
+				String.format("[Y: %d]\n", getY()) +
+				String.format("[W: %d]\n", getWidth()) + 
+				String.format("[H: %d]\n", getHeight());
+	}
+	
+	
 
 }

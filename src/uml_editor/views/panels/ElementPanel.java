@@ -1,32 +1,21 @@
 package uml_editor.views.panels;
 
 import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.swing.JPanel;
-import javax.swing.event.MenuDragMouseListener;
 
-import uml_editor.Program;
-import uml_editor.views.MainWindow;
 import uml_editor.views.components.elements.AssociationLineElement;
 import uml_editor.views.components.elements.ClassElement;
 import uml_editor.views.components.elements.CompositionLineElement;
@@ -45,13 +34,6 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 		super();
 		addMouseListener(this);
 		addMouseMotionListener(this);
-		var ele = new ClassElement();
-		ele.setDepth(0);
-		ele.setPt1(new Point(0, 0));
-		ele.setPt2(new Point(100, 150));
-		ele.init();
-		ele.setIsVisible(true);
-		_elements.add(ele);
 	}
 
 	@Override
@@ -60,7 +42,6 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 			_isFirstPainted = true;
 			OnFirstPaint();
 		}
-		var origin = getOrigin();
 		g.drawImage(getBackGround(), 0, 0, null);
 		g.drawImage(getStaticGround(), 0, 0, null);
 		g.drawImage(getDynamicGround(), 0, 0, new Color(0, 0, 0, 0), null);
@@ -111,12 +92,19 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 		}
 		var g = (Graphics2D) _stGnd.getGraphics();
 		var origin = getOrigin();
-		ArrayList<Element> clone = (ArrayList<Element>) _elements.clone();
-		Collections.reverse(clone);
-		for (var e : clone) {
-			if (e != _now_mouseOveringElement && e != _now_selectedElement)
+		ArrayList<Element> reversed = new ArrayList<>(_elements);
+		Collections.reverse(reversed);
+		for (var e : reversed) {
+			System.out.println(e.getDepth());
+			if (e != _now_mouseOveringElement && e != _now_selectedElement) {
 				e.StartToDraw((Graphics2D) g, origin);
+				e.DrawInfo((Graphics2D) g, origin);
+			}
+
 		}
+		/*
+		 * for (var e : _groups) { e.StartToDraw((Graphics2D) g, origin); }
+		 */
 		_isForceUpdStGnd = false;
 		return _stGnd;
 	}
@@ -340,8 +328,9 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 		return getCanBeJointElements().stream().map(x -> (x).getAllJointElements()).flatMap(List::stream)
 				.collect(Collectors.toList());
 	}
-	
+
 	private ArrayList<Element> _groupingElements = new ArrayList<Element>();
+	private ArrayList<GroupElement> _groups = new ArrayList<GroupElement>();
 
 	private Element _dynElement = null;
 
@@ -401,8 +390,8 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 			_now_selectedElement.setIsSelected(false);
 			_now_selectedElement = null;
 		}
-		if(_groupingElements.size()>0) {
-			for(var gele : _groupingElements) {
+		if (_groupingElements.size() > 0) {
+			for (var gele : _groupingElements) {
 				gele.setIsSelected(false);
 			}
 			_groupingElements.clear();
@@ -449,8 +438,8 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 			_isForceUpdStGnd = true;
 			_isForceUpdDynGnd = true;
 		}
-		if(_groupingElements.size()>0) {
-			for(var gele : _groupingElements) {
+		if (_groupingElements.size() > 0) {
+			for (var gele : _groupingElements) {
 				gele.setIsSelected(false);
 			}
 			_groupingElements.clear();
@@ -494,7 +483,6 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 	private void selectionSession_LMReleased(Point mpt) {
 		_dragingElementStart = false;
 
-		var o = getOrigin();
 		/*
 		 * _dynElement.setPt2(mpt.x - o.x, mpt.y - o.y); for (var ele : _elements) {
 		 * ele.incDepth(); }
@@ -508,12 +496,12 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 		 * if(((GroupElement)_dynElement).getIsIncluded(ele)) }
 		 */
 		if (_groupingElementStart) {
+			GroupElement gDynEle = (GroupElement) _dynElement;
 			for (var jele : getCanBeJointElements()) {
-				if (((GroupElement) _dynElement).getIsIncluded((Element) jele)) {
+				if (gDynEle.getIsIncluded((Element) jele)) {
 					((Element) jele).setIsSelected(true);
 					_groupingElements.add(((Element) jele));
 				}
-					
 			}
 			_groupingElementStart = false;
 		}
@@ -656,6 +644,27 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 		}
 		if (_isForceUpdStGnd)
 			update(getGraphics());
+	}
+
+	public void setAGroup() {
+		if (_groupingElements.size() > 1) {
+			GroupElement gDynEle = new GroupElement();
+			for (var ele : _groupingElements) {
+				ele.setOwner(gDynEle);
+			}
+			gDynEle.setGroupedElements(new ArrayList<Element>(_groupingElements));
+			_groups.add(gDynEle);
+			gDynEle.setIsVisible(true);
+			gDynEle.setDepth(0);
+			for (var ele : _elements) {
+				ele.incDepth();
+			}
+			_elements.add(gDynEle);
+			Collections.sort(_elements, (l, r) -> l.getDepth() - r.getDepth());
+			_dynElement = null;
+			_isForceUpdStGnd = true;
+			update(getGraphics());
+		}
 	}
 
 }

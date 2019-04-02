@@ -19,6 +19,8 @@ public class LineElement extends Element {
 		return _to_joint;
 	}
 
+	
+
 	public void setFromJoint(JointElement value) {
 		_from_joint = value;
 	}
@@ -52,7 +54,7 @@ public class LineElement extends Element {
 
 	@Override
 	protected void HowToDraw(Graphics2D g, Point o) {
-		// super.HowToDraw(g,o);
+		//super.HowToDraw(g,o);
 		g.setColor(Color.black);
 		g.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		if (getIsMouseOver()) {

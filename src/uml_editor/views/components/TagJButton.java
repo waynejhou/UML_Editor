@@ -1,11 +1,6 @@
 package uml_editor.views.components;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Insets;
-
 import javax.swing.JButton;
-import javax.swing.border.LineBorder;
 
 import uml_editor.interfaces.ITag;
 
