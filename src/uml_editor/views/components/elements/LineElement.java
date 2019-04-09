@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Line2D;
+import java.util.Comparator;
 
 public class LineElement extends Element {
 
@@ -43,6 +44,27 @@ public class LineElement extends Element {
 		return _to_joint.getCenterPoint();
 	}
 
+	@Override
+	public int getX() {
+		return Math.min(getPt1().x, getPt2().x);
+	}
+
+	@Override
+	public int getY() {
+		return Math.min(getPt1().y, getPt2().y);
+	}
+
+	@Override
+	public int getWidth() {
+		return Math.abs(getPt1().x - getPt2().x);
+	}
+
+	@Override
+	public int getHeight() {
+		return Math.abs(getPt1().y - getPt2().y);
+	}
+
+	
 	@Override
 	public boolean isPointIn(int x, int y) {
 		var dist = Line2D.ptLineDist(

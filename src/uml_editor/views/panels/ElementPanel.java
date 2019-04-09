@@ -95,10 +95,9 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 		ArrayList<Element> reversed = new ArrayList<>(_elements);
 		Collections.reverse(reversed);
 		for (var e : reversed) {
-			System.out.println(e.getDepth());
 			if (e != _now_mouseOveringElement && e != _now_selectedElement) {
 				e.StartToDraw((Graphics2D) g, origin);
-				//e.DrawInfo((Graphics2D) g, origin);
+				e.DrawInfo((Graphics2D) g, origin);
 			}
 
 		}
@@ -497,7 +496,7 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 		 */
 		if (_groupingElementStart) {
 			GroupElement gDynEle = (GroupElement) _dynElement;
-			for (var jele : getCanBeJointElements()) {
+			for (var jele : _elements) {
 				if (gDynEle.getIsIncluded((Element) jele)) {
 					((Element) jele).setIsSelected(true);
 					_groupingElements.add(((Element) jele));
@@ -661,7 +660,10 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 			}
 			_elements.add(gDynEle);
 			Collections.sort(_elements, (l, r) -> l.getDepth() - r.getDepth());
-			_dynElement = null;
+			for(var ge:_groupingElements) {
+				ge.setIsSelected(false);
+			}
+			_groupingElements.clear();
 			_isForceUpdStGnd = true;
 			update(getGraphics());
 		}
@@ -681,6 +683,26 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 			_isForceUpdDynGnd = true;
 			update(getGraphics());
 		}
-		
+	}
+	
+	public void unsetAGroup() {
+		if(_now_selectedElement instanceof GroupElement) {
+			_elements.remove(_now_selectedElement);
+			for(var ele : _elements) {
+				if(ele instanceof GroupElement) {
+					if(((GroupElement) ele).getGroupedElements().contains(_now_selectedElement)) {
+						((GroupElement) ele).getGroupedElements().remove(_now_selectedElement);
+					}
+					if(((GroupElement) ele).getGroupedElements().size()==0) {
+						_elements.remove(ele);
+					}
+				}
+			}
+			_now_selectedElement.setIsSelected(false);
+			_now_selectedElement = null;
+			_isForceUpdStGnd = true;
+			_isForceUpdDynGnd = true;
+			update(getGraphics());
+		}
 	}
 }

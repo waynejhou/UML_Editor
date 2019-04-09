@@ -45,6 +45,11 @@ public class MainWindow extends JFrame {
         				}
         			});
         		}});
+        		add(new JMenuItem("UnGroup Elements") {{
+        			addActionListener(e->{
+        				_ElePanel.unsetAGroup();
+        			});
+        		}});
         	}});
         }});
         this.add(new JPanel() {

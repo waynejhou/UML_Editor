@@ -54,7 +54,7 @@ public class EditNameDialog extends JDialog {
 		dlg.setVisible(true);
 		{
 			if(!dlg._contextArea.getText().isEmpty()) {
-				outResult.setIsSuccess(true);
+				outResult.setIsSuccess(dlg._isSuccess);
 				outResult.setName(dlg._contextArea.getText());
 			}
 		}
