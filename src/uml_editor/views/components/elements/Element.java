@@ -166,7 +166,17 @@ public class Element {
 			return false;
 		return true;
 	}
-
+	
+	private String _context = null;
+	
+	public String getContext() {
+		return _context;
+	}
+	
+	public void setContext(String value) {
+		_context = value;
+	}
+	
 	@Override
 	public String toString() {
 		return

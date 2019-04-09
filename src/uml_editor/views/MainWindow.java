@@ -37,7 +37,14 @@ public class MainWindow extends JFrame {
         				_ElePanel.setAGroup();
         			});
         		}});
-        		add(new JMenuItem("EditName"));
+        		add(new JMenuItem("Edit Name") {{
+        			addActionListener(e->{
+        				var result = new EditNameDialogResult();
+        				if(EditNameDialog.ShowDialog(result)) {
+        					System.out.println(result.getName());
+        				}
+        			});
+        		}});
         	}});
         }});
         this.add(new JPanel() {
