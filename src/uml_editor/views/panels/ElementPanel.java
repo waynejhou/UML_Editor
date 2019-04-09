@@ -98,7 +98,7 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 			System.out.println(e.getDepth());
 			if (e != _now_mouseOveringElement && e != _now_selectedElement) {
 				e.StartToDraw((Graphics2D) g, origin);
-				e.DrawInfo((Graphics2D) g, origin);
+				//e.DrawInfo((Graphics2D) g, origin);
 			}
 
 		}
@@ -666,5 +666,21 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 			update(getGraphics());
 		}
 	}
-
+	
+	public String getAName() {
+		if(_now_selectedElement!=null) {
+			return _now_selectedElement.getContext();
+		}
+		return null;
+	}
+	
+	public void setAName(String context) {
+		if(_now_selectedElement!=null) {
+			_now_selectedElement.setContext(context);
+			_isForceUpdStGnd = true;
+			_isForceUpdDynGnd = true;
+			update(getGraphics());
+		}
+		
+	}
 }

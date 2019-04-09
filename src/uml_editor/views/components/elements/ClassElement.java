@@ -90,9 +90,12 @@ public class ClassElement extends Element implements ICanBeJointed {
 			while (y0 - y <= h - 30) {
 				//g.drawLine(x0, y0, x1, y0);
 				if(c<ctxLines.size()) {
-					g.drawString(ctxLines.get(c), x0, y0);
+					g.drawString(ctxLines.get(c++), x0+5, y0-5);
 				}
 				y0 += 30;
+			}
+			if(c<ctxLines.size()) {
+				g.drawString(ctxLines.get(c), x0+5, y0-5);
 			}
 		}
 	}

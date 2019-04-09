@@ -40,8 +40,8 @@ public class MainWindow extends JFrame {
         		add(new JMenuItem("Edit Name") {{
         			addActionListener(e->{
         				var result = new EditNameDialogResult();
-        				if(EditNameDialog.ShowDialog(result)) {
-        					System.out.println(result.getName());
+        				if(EditNameDialog.ShowDialog(result, _ElePanel.getAName())) {
+        					_ElePanel.setAName(result.getName());
         				}
         			});
         		}});

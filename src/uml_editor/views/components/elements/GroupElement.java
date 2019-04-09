@@ -99,6 +99,15 @@ public class GroupElement extends Element {
 		int x = getX() + o.x - 5 /*- w / 2*/;
 		int y = getY() + o.y - 5/*- h / 2*/;
 		g.setColor(new Color(150, 150, 150, 150));
+		if(getIsMouseOver()) {
+			g.setColor(new Color(255, 0, 0, 150));
+		}
+		if(getIsSelected()) {
+			g.setColor(new Color(0, 0, 0, 150));
+		}
+		if(getIsMouseOver()&&getIsSelected()) {
+			g.setColor(new Color(255, 0, 0));
+		}
 		g.drawRect(x, y, w, h);
 	}
 

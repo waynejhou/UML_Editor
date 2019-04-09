@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import uml_editor.views.components.elements.interfaces.ICanBeJointed;
 
@@ -77,5 +78,14 @@ public class UseCaseElement extends Element implements ICanBeJointed {
 			}
 		}
 		
+		if (getContext() != null && !getContext().isEmpty()) {
+			var ctxLines = getContext().lines().collect(Collectors.toList());
+			int x0 = x, y0 = y + 50;
+			for(var l : ctxLines) {
+				g.drawString(l, x0+15, y0-5);
+				y0 += 14;
+			}
+			
+		}
 	}
 }
