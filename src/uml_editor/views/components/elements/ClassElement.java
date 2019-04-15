@@ -69,13 +69,14 @@ public class ClassElement extends Element implements ICanBeJointed {
 		}
 
 		g.drawRect(x, y, w, h);
+		
 		{
 			int x0 = x, y0 = y + 50, x1 = x + w;
-			while (y0 - y <= h - 30) {
-				g.drawLine(x0, y0, x1, y0);
-				y0 += 30;
-			}
+			g.drawLine(x0, y0, x1, y0);
+			y0 += (getHeight()-50)/2;
+			g.drawLine(x0, y0, x1, y0);
 		}
+		
 		g.setColor(new Color(0, 0, 0));
 		g.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		if (getIsIinted()) {
@@ -85,18 +86,42 @@ public class ClassElement extends Element implements ICanBeJointed {
 		}
 
 		if (getContext() != null && !getContext().isEmpty()) {
-			var ctxLines = getContext().lines().collect(Collectors.toList());
-			int x0 = x, y0 = y + 50, x1 = x + w, c = 0;
-			while (y0 - y <= h - 30) {
-				//g.drawLine(x0, y0, x1, y0);
-				if(c<ctxLines.size()) {
-					g.drawString(ctxLines.get(c++), x0+5, y0-5);
+			var ctx = getContext().split("=====", 3);
+			int c = 0;
+			for(var str : ctx) {
+				var ctxLines = str.lines().collect(Collectors.toList());
+				if(c==0) {
+					int x0 = x, y0 = y , counter = 0;
+					for(var l : ctxLines) {
+						if(counter<ctxLines.size()) {
+							g.drawString(l, x0+5, y0);
+						}
+						y0 += 12;
+						counter++;
+					}
+				}else if(c==1){
+					int x0 = x, y0 = y+50 , counter = 0;
+					for(var l : ctxLines) {
+						if(counter<ctxLines.size()) {
+							g.drawString(l, x0+5, y0);
+						}
+						y0 += 12;
+						counter++;
+					}
+				}else if(c==2){
+					int x0 = x, y0 = y+(getHeight()-50)/2 , counter = 0;
+					for(var l : ctxLines) {
+						if(counter<ctxLines.size()) {
+							g.drawString(l, x0+5, y0);
+						}
+						y0 += 12;
+						counter++;
+					}
 				}
-				y0 += 30;
+				
+				c++;
 			}
-			if(c<ctxLines.size()) {
-				g.drawString(ctxLines.get(c), x0+5, y0-5);
-			}
+			
 		}
 	}
 
