@@ -96,8 +96,15 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 		Collections.reverse(reversed);
 		for (var e : reversed) {
 			if (e != _now_mouseOveringElement && e != _now_selectedElement) {
-				e.StartToDraw((Graphics2D) g, origin);
-				e.DrawInfo((Graphics2D) g, origin);
+				if(_now_selectedElement instanceof GroupElement) {
+					if(!((GroupElement)_now_selectedElement).getGroupedElements().contains(e)) {
+						e.StartToDraw((Graphics2D) g, origin);
+					}
+				}else {
+					e.StartToDraw((Graphics2D) g, origin);
+				}
+				
+				//e.DrawInfo((Graphics2D) g, origin);
 			}
 
 		}
@@ -145,7 +152,13 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 				_now_selectedElement.StartToDraw((Graphics2D) g,
 						new Point(((JointElement) _now_selectedElement).getOwner().getX() + origin.x,
 								((JointElement) _now_selectedElement).getOwner().getY() + origin.y));
-			} else {
+			}else if (_now_selectedElement instanceof GroupElement) {
+				for(var ge: ((GroupElement) _now_selectedElement).getGroupedElements()) {
+					ge.StartToDraw((Graphics2D) g, origin);
+				}
+				_now_selectedElement.StartToDraw((Graphics2D) g, origin);
+			}
+			else {
 				_now_selectedElement.StartToDraw((Graphics2D) g, origin);
 			}
 		}
@@ -659,6 +672,7 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
 				ele.incDepth();
 			}
 			_elements.add(gDynEle);
+			gDynEle.init();
 			Collections.sort(_elements, (l, r) -> l.getDepth() - r.getDepth());
 			for(var ge:_groupingElements) {
 				ge.setIsSelected(false);

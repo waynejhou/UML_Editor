@@ -31,11 +31,15 @@ public class GroupElement extends Element {
 	public boolean isPointIn(int x, int y) {
 		if (_groupedElements == null)
 			return super.isPointIn(x, y);
-		var inOut = (x > getX() - 3 && x < getX() + getWidth() + 3 && y > getY() - 3 && y < getY() + getHeight() + 3);
-		var outIn = (x < getX() + 3 || x > getX() + getWidth() - 3 || y < getY() + 3 || y > getY() + getHeight() - 3);
+		//var inOut = (x > getX() - 3 && x < getX() + getWidth() + 3 && y > getY() - 3 && y < getY() + getHeight() + 3);
+		//var outIn = (x < getX() + 3 || x > getX() + getWidth() - 3 || y < getY() + 3 || y > getY() + getHeight() - 3);
 		// System.out.printf("%b, %b\n", inOut, outIn);
-		var re = inOut && outIn;
+		//var re = inOut /*&& outIn*/;
 		// System.out.println(re);
+		boolean re = false;
+		for(var ge: getGroupedElements()) {
+			re |= ge.isPointIn(x, y);
+		}
 		return re;
 	}
 
@@ -142,8 +146,32 @@ public class GroupElement extends Element {
 		return false;
 	}
 
+	
+	
 	@Override
 	protected void HowToDraw(Graphics2D g, Point o) {
+		if(!getIsIinted()) {
+			int w = getWidth();
+			int h = getHeight();
+			int x = getX() + o.x;
+			int y = getY() + o.y;
+			g.setColor(new Color(150, 150, 150, 150));
+			if (getIsMouseOver()) {
+				g.setColor(new Color(0, 0, 0, 150));
+			}
+			if (getIsSelected()) {
+				g.setColor(new Color(255, 0, 0, 150));
+			}
+			if (getIsMouseOver() && getIsSelected()) {
+				g.setColor(new Color(255, 0, 0));
+			}
+			g.drawRect(x, y, w, h);
+		}
+	}
+
+	@Override
+	public void DrawInfo(Graphics2D g, Point o) {
+		super.DrawInfo(g, o);
 		int w = getWidth();
 		int h = getHeight();
 		int x = getX() + o.x;
@@ -160,5 +188,21 @@ public class GroupElement extends Element {
 		}
 		g.drawRect(x, y, w, h);
 	}
+
+	@Override
+	public void setIsMouseOver(boolean value) {
+		super.setIsMouseOver(value);
+		for(var ge: _groupedElements)
+			ge.setIsMouseOver(value);
+	}
+
+	@Override
+	public void setIsSelected(boolean value) {
+		super.setIsSelected(value);
+		for(var ge: _groupedElements)
+			ge.setIsSelected(value);
+	}
+	
+	
 
 }
