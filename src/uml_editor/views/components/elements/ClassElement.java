@@ -91,7 +91,7 @@ public class ClassElement extends Element implements ICanBeJointed {
 			for(var str : ctx) {
 				var ctxLines = str.lines().collect(Collectors.toList());
 				if(c==0) {
-					int x0 = x, y0 = y , counter = 0;
+					int x0 = x, y0 = y + 12 , counter = 0;
 					for(var l : ctxLines) {
 						if(counter<ctxLines.size()) {
 							g.drawString(l, x0+5, y0);
@@ -100,7 +100,7 @@ public class ClassElement extends Element implements ICanBeJointed {
 						counter++;
 					}
 				}else if(c==1){
-					int x0 = x, y0 = y+50 , counter = 0;
+					int x0 = x, y0 = y + 50 , counter = 0;
 					for(var l : ctxLines) {
 						if(counter<ctxLines.size()) {
 							g.drawString(l, x0+5, y0);
@@ -109,7 +109,7 @@ public class ClassElement extends Element implements ICanBeJointed {
 						counter++;
 					}
 				}else if(c==2){
-					int x0 = x, y0 = y+(getHeight()-50)/2 , counter = 0;
+					int x0 = x, y0 = y+50+((getHeight()-50)/2) , counter = 0;
 					for(var l : ctxLines) {
 						if(counter<ctxLines.size()) {
 							g.drawString(l, x0+5, y0);
