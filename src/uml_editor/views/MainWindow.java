@@ -1,16 +1,13 @@
 package uml_editor.views;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -18,16 +15,17 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 
-import uml_editor.views.components.TagJButton;
 import uml_editor.views.panels.ElementPanel;
 import uml_editor.views.panels.enums.EditorMode;
 
 public class MainWindow extends JFrame {
 
+	// Panel With Elements
 	ElementPanel _ElePanel;
     public MainWindow() {
         this.setTitle("Wayne UML Editor");
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.setLocationByPlatform(true);
         this.setSize(800, 600);
         this.setJMenuBar(new JMenuBar() {{
         	add(new JMenu("File"));
@@ -62,9 +60,13 @@ public class MainWindow extends JFrame {
         setMode(EditorMode._select);
     }
     
-    List<TagJButton> modeBtns =
+    List<JButton> modeBtns =
     		Arrays.asList(EditorMode.values()).stream()
-    		.map(x->new TagJButton(x.toString().substring(1), x))
+    		.map(x->{
+    			var btn = new JButton(x.toString().substring(1));
+    			btn.setName(x.toString());
+    			return btn;
+    		})
     		.collect(Collectors.toList());
     
     JPanel panel_westJPanel = new JPanel() {{
@@ -73,7 +75,7 @@ public class MainWindow extends JFrame {
         for(var btn: modeBtns ){
             add(btn);
             btn.addActionListener(e->{
-                setMode((EditorMode) btn.getTag());
+                setMode(EditorMode.valueOf(btn.getName()));
             });
         }
     }};
@@ -83,11 +85,11 @@ public class MainWindow extends JFrame {
     void setMode(EditorMode value){
     	_ElePanel.setMode(value);
         for(var btn: modeBtns) {
-        	if(btn.getTag()!=getMode()) {
-        		btn.setText(btn.getTag().toString().substring(1));
+        	if(EditorMode.valueOf(btn.getName())!=getMode()) {
+        		btn.setText(btn.getName().substring(1));
         	}
         	else {
-        		btn.setText("[[["+ btn.getTag().toString().substring(1) +"]]]");
+        		btn.setText("[[["+ btn.getName().substring(1) +"]]]");
 			}
         }
     }
