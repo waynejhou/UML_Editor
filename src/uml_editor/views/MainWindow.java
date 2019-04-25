@@ -79,7 +79,6 @@ public class MainWindow extends JFrame {
             });
         }
     }};
-    
 
     public EditorMode getMode(){return _ElePanel.getMode();}
     void setMode(EditorMode value){
