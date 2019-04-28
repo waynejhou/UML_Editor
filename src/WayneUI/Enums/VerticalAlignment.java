@@ -1,7 +1,5 @@
-package WayneUI.Enums;
+package wayneUI.enums;
 
 public enum VerticalAlignment {
-	Top, Center, Bottom
+    Top, Center, Bottom
 }
-
-

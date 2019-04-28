@@ -1,5 +1,5 @@
-package WayneUI.Enums;
+package wayneUI.enums;
 
 public enum HorizontalAlignment {
-	Left, Center, Right
+    Left, Center, Right
 }
