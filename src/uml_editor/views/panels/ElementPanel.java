@@ -175,7 +175,7 @@ public class ElementPanel extends JPanel implements MouseListener, MouseMotionLi
         return _dynGnd;
     }
 
-    private EditorMode _mode = null;
+    private EditorMode _mode = EditorMode._select;
 
     public EditorMode getMode() {
         return _mode;
