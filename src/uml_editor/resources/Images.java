@@ -1,12 +1,13 @@
 package uml_editor.resources;
 
-import java.awt.image.BufferedImage;
+import java.awt.Image;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-public abstract class Images {
-    public static BufferedImage Select, UseCase, GeneralizationLine, Class, CompositionLine, AssociationLine;
+public final class Images {
+    private Images() {}
+    public static Image Select, UseCase, GeneralizationLine, Class, CompositionLine, AssociationLine;
     static {
         try {
             Select = ImageIO.read(Images.class.getResource("images/Select.png"));

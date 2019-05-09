@@ -118,7 +118,7 @@ public class WRadioButton extends WComponent {
     public void setLabel(String value) {
         _Label = value;
     }
-    public void setLabel(BufferedImage value) {
+    public void setLabel(Image value) {
         _Label = value;
     }
 
