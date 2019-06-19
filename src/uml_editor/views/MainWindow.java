@@ -1,39 +1,38 @@
 package uml_editor.views;
 
+import static uml_editor.functions.ComponentFunctions.*;
+import static uml_editor.functions.MenuFunctions.*;
+
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.BoxLayout;
-import javax.swing.JRadioButton;
 
-import uml_editor.Pair;
-import uml_editor.listeners.SelectSessionMouseListener;
 import uml_editor.resources.ColorSetter;
 import uml_editor.resources.Images;
-
-import static uml_editor.interfaces.ComponentFactory.*;
-import static uml_editor.interfaces.MenuFactory.*;
-import uml_editor.views.panels.ElementPanel;
-import wayneUI.Setter;
-import wayneUI.Style;
-import wayneUI.components.WRadioButton;
+import uml_editor.utils.Pair;
+import uml_editor.utils.Setter;
+import uml_editor.utils.Style;
+import uml_editor.utils.sessions.CreateLineShapeSession;
+import uml_editor.utils.sessions.UMLSession;
+import uml_editor.views.components.UMLPanel;
+import uml_editor.views.components.WRadioButton;
+import uml_editor.views.shapes.lines.AssociationArrowLineShape;
+import uml_editor.views.shapes.lines.AssociationLineShape;
+import uml_editor.views.shapes.lines.ImplementLine;
+import uml_editor.views.shapes.lines.InheritanceLine;
 
 public class MainWindow extends Frame {
 
-    ElementPanel _ElePanel;
+    UMLPanel _UmlPanel;
 
-    @SuppressWarnings("unchecked")
     public MainWindow(){
         this.setTitle("Wayne UML Editor");
         this.addWindowListener(new WindowAdapter() {
@@ -46,65 +45,94 @@ public class MainWindow extends Frame {
         this.setLocationByPlatform(true);
         this.setSize(800, 600);
         this.setMenuBar(
-                newMenuBar(
-                        newMenu("File"),
-                        newMenu("Edit",
-                                newMenuItem("Group Elements", setAGroup),
-                                newMenuItem("Edit Name", showEditNameDialog),
-                                newMenuItem("UnGroup Elements", unsetAGroup))
+                cr8MenuBar(
+                        cr8Menu("File"),
+                        cr8Menu("Edit",
+                                cr8MenuItem("Group Elements", setAGroup),
+                                cr8MenuItem("Edit Name", showEditNameDialog),
+                                cr8MenuItem("UnGroup Elements", unsetAGroup))
                         ));
-        this.add(newBorderPanel(
-                new Pair(BorderLayout.WEST, newBoxPanel(BoxLayout.Y_AXIS,
-                        newComponent(WRadioButton.class,leftButtonStyle,
+        this.add(cr8BorderPanel(
+                new Pair<String, Component>(BorderLayout.WEST, cr8BoxPanel(BoxLayout.Y_AXIS,
+                        cr8Comp(WRadioButton.class,leftButtonStyle,
                                 new Setter("Label", Images.Select),
-                                new Setter("DataContext", new SelectSessionMouseListener())),
+                                new Setter("DataContext", UMLSession.SelectSession),
+                                new Setter("IsToggle", Boolean.TRUE)),
                         
-                        newComponent(WRadioButton.class,leftButtonStyle,
-                                new Setter("Label", Images.AssociationLine)),
+                        cr8Comp(WRadioButton.class,leftButtonStyle,
+                                new Setter("Label", Images.AssociationLine),
+                                new Setter("DataContext", new CreateLineShapeSession(AssociationLineShape.Creator))),
                         
-                        newComponent(WRadioButton.class,leftButtonStyle,
-                                new Setter("Label", Images.GeneralizationLine)),
+                        cr8Comp(WRadioButton.class,leftButtonStyle,
+                                new Setter("Label", Images.AssociationArrowLine),
+                                new Setter("DataContext", new CreateLineShapeSession(AssociationArrowLineShape.Creator))),
                         
-                        newComponent(WRadioButton.class,leftButtonStyle,
-                                new Setter("Label", Images.CompositionLine)),
+                        cr8Comp(WRadioButton.class,leftButtonStyle,
+                                new Setter("Label", Images.InheritanceLine),
+                                new Setter("DataContext", new CreateLineShapeSession(InheritanceLine.Creator))),
                         
-                        newComponent(WRadioButton.class,leftButtonStyle,
-                                new Setter("Label", Images.Class)),
+                        cr8Comp(WRadioButton.class,leftButtonStyle,
+                                new Setter("Label", Images.ImplementLine),
+                                new Setter("DataContext", new CreateLineShapeSession(ImplementLine.Creator))),
                         
-                        newComponent(WRadioButton.class,leftButtonStyle,
-                                new Setter("Label", Images.UseCase))
+                        cr8Comp(WRadioButton.class,leftButtonStyle,
+                                new Setter("Label", Images.GeneralizationLine),
+                                new Setter("DataContext", UMLSession.GeneralizationLineShapeSession)),
+                        
+                        cr8Comp(WRadioButton.class,leftButtonStyle,
+                                new Setter("Label", Images.CompositionLine),
+                                new Setter("DataContext", UMLSession.CompositionLineSession)),
+                        
+                        cr8Comp(WRadioButton.class,leftButtonStyle,
+                                new Setter("Label", Images.Class),
+                                new Setter("DataContext", UMLSession.ClassSession)),
+                        
+                        cr8Comp(WRadioButton.class,leftButtonStyle,
+                                new Setter("Label", Images.UseCase),
+                                new Setter("DataContext", UMLSession.UseCaseSession))
                         )),
-                new Pair(BorderLayout.CENTER, (_ElePanel = new ElementPanel()))));
+                new Pair<String, Component>(BorderLayout.CENTER, (_UmlPanel = cr8Comp(UMLPanel.class, null,
+                        new Setter("BackgroundSetter", ColorSetter.ThemeColor_Back),
+                        new Setter("ForegroundSetter", (ColorSetter)(c->new Color(200,200,200)))
+                        )))));
     }
 
     public ActionListener setAGroup = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            _ElePanel.setAGroup();
+            if(_UmlPanel.getSession()==UMLSession.SelectSession) {
+                UMLSession.SelectSession.setAGroup();
+            }
         }
     };
     public ActionListener unsetAGroup = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            _ElePanel.unsetAGroup();
+            if(_UmlPanel.getSession()==UMLSession.SelectSession) {
+                UMLSession.SelectSession.unsetAGroup();
+            }
         }
     };
     public ActionListener showEditNameDialog = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
             var result = new EditNameDialogResult();
-            if (EditNameDialog.ShowDialog(result, _ElePanel.getAName())) {
-                _ElePanel.setAName(result.getName());
+            if(_UmlPanel.getSession()==UMLSession.SelectSession) {
+                if (EditNameDialog.ShowDialog(result, UMLSession.SelectSession.getAName())) {
+                    UMLSession.SelectSession.setAName(result.getName());
+                }
             }
         }
     };
     public ActionListener changeMode = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
+            if(_UmlPanel==null)
+                return;
             var btn = (WRadioButton)e.getSource();
-            _ElePanel.addMouseListener((MouseListener)btn.getDataContext());
-            _ElePanel.addMouseMotionListener((MouseMotionListener)btn.getDataContext());
-            _ElePanel.addMouseWheelListener((MouseWheelListener)btn.getDataContext());
+            if(btn.getIsToggle()!=true)
+                return;
+            _UmlPanel.setSession((UMLSession)btn.getDataContext());
         }
     };
     private Style leftButtonStyle = new Style(
