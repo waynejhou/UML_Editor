@@ -227,7 +227,6 @@ public class CreateLineShapeSession extends UMLSession {
      */
 
     public JointPoint getPointOverJointPoint(int x, int y) {
-        var o = H.getOrigin();
         for (var jpt : getAllJointPoints())
             if (jpt.contains(x,y))
                 return jpt;

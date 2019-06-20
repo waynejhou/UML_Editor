@@ -4,9 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 
 public class GroupShape extends BaseShape {
 
@@ -20,23 +18,6 @@ public class GroupShape extends BaseShape {
         return _groupedShapes;
     }
 
-    public List<BaseShape> getAllGroupedShapes() {
-        LinkedList<BaseShape> all = new LinkedList<BaseShape>();
-        Stack<GroupShape> ptrs = new Stack<GroupShape>();
-        ptrs.push(this);
-        while (ptrs.size() > 0) {
-            var ptr = ptrs.pop();
-            for (var shape : ptr.getGroupedShapes()) {
-                if (!(shape instanceof GroupShape))
-                    all.add(shape);
-                else {
-                    ptrs.push((GroupShape) shape);
-                }
-            }
-            all.add(ptr);
-        }
-        return all;
-    }
 
     public void setGroupedShapes(List<BaseShape> value) {
         if(value!=null) {

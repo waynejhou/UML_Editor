@@ -1,14 +1,20 @@
 package uml_editor.views;
 
 import java.awt.BorderLayout;
+import java.awt.Button;
+import java.awt.Component;
+import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import static uml_editor.functions.ComponentFunctions.*;
 
 import uml_editor.Program;
+import uml_editor.utils.Pair;
+import uml_editor.utils.Setter;
 
 public class EditNameDialog extends JDialog {
 
@@ -17,7 +23,31 @@ public class EditNameDialog extends JDialog {
     public EditNameDialog(String defaultContext) {
         super(Program.MainWin, Program.MainWin.getTitle(), true);
         this.setSize(200, 200);
-
+        var jsp = new JScrollPane(_contextArea = new JTextArea());
+        if (defaultContext != null)
+            _contextArea.setText(defaultContext);
+        this.add(cr8BorderPanel(
+                new Pair<String, Component>(BorderLayout.CENTER, jsp),
+                new Pair<String, Component>(BorderLayout.SOUTH,
+                        cr8Panel(
+                        cr8Comp(Button.class,null,
+                                new Setter("Label","Confirm"),
+                                new Setter("ActionListener",(ActionListener)(e->{
+                                    _isSuccess = true;
+                                    ((EditNameDialog) ((Button) e.getSource()).getParent().getParent().getParent()
+                                            .getParent().getParent().getParent()).setVisible(false);
+                                }))),
+                        cr8Comp(Button.class,null,
+                                new Setter("Label","Cancel"),
+                                new Setter("ActionListener",(ActionListener)(e->{
+                                    _isSuccess = false;
+                                    ((EditNameDialog) ((Button) e.getSource()).getParent().getParent().getParent()
+                                            .getParent().getParent().getParent()).setVisible(false);
+                                })))
+                        ))
+                ));
+        
+        /*
         this.add(new JPanel() {
             {
                 setLayout(new BorderLayout());
@@ -48,7 +78,7 @@ public class EditNameDialog extends JDialog {
                     }
                 }, BorderLayout.SOUTH);
             }
-        });
+        });*/
     }
 
     private boolean _isSuccess = false;

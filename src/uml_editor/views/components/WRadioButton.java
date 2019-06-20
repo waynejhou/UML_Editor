@@ -6,10 +6,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Panel;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -18,22 +14,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.PathIterator;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 
-import uml_editor.enums.HorizontalAlignment;
-import uml_editor.enums.VerticalAlignment;
 import uml_editor.resources.ColorSetter;
-import uml_editor.utils.Setter;
-import uml_editor.utils.Style;
 
 public class WRadioButton extends WComponent {
     static HashMap<String, LinkedList<WRadioButton>> _Group = new HashMap<String, LinkedList<WRadioButton>>();
@@ -229,7 +213,6 @@ public class WRadioButton extends WComponent {
 
         if(getLabel() instanceof Image) {
             var img = (Image)getLabel();
-            var m = g.getFontMetrics();
             var h = Math.max( Math.min(img.getHeight(null),getHeight()/2), 0);
             int w = Math.max( Math.min(img.getWidth(null),getWidth()/2), 0);
             var p = getLabelPositionByAlignments(new Dimension(w, h));

@@ -4,21 +4,18 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import uml_editor.utils.ShapeList;
@@ -69,15 +66,15 @@ public class UMLPanel extends WComponent {
 
     public void setSession(UMLSession value) {
         if (_Session != null) {
-            this.removeMouseListener((MouseListener) _Session);
-            this.removeMouseMotionListener((MouseMotionListener) _Session);
-            this.removeMouseWheelListener((MouseWheelListener) _Session);
+            this.removeMouseListener(_Session);
+            this.removeMouseMotionListener(_Session);
+            this.removeMouseWheelListener(_Session);
             _Session.setHost(null);
         }
         if (value != null) {
-            this.addMouseListener((MouseListener) value);
-            this.addMouseMotionListener((MouseMotionListener) value);
-            this.addMouseWheelListener((MouseWheelListener) value);
+            this.addMouseListener(value);
+            this.addMouseMotionListener(value);
+            this.addMouseWheelListener(value);
         }
         value.setHost(this);
         _Session = value;
@@ -203,4 +200,23 @@ public class UMLPanel extends WComponent {
     public Set<JointPoint> DynamicJointPoints = new HashSet<JointPoint>();
     public Set<BaseShape> PreviewedShapes = new HashSet<BaseShape>();
 
+    public void SaveState() throws IOException {
+        FileOutputStream foStream = new FileOutputStream("save.dat");
+        ObjectOutputStream objoStream = new ObjectOutputStream(foStream);
+        objoStream.writeObject(ShapeCollection);
+        objoStream.writeObject(CanBeJointedShapeCollection);
+        objoStream.writeObject(GroupShapeCollection);
+        objoStream.writeObject(LineShapeCollection);
+    }
+    @SuppressWarnings("unchecked")
+    public void LoadState() throws IOException, ClassNotFoundException {
+        FileInputStream fiStream = new FileInputStream("save.dat");
+        ObjectInputStream objiStream = new ObjectInputStream(fiStream);
+        ShapeCollection = (ShapeList<BaseShape>) objiStream.readObject();
+        CanBeJointedShapeCollection = (ShapeList<CanBeJointedShape>) objiStream.readObject();
+        GroupShapeCollection = (ShapeList<GroupShape>) objiStream.readObject();
+        LineShapeCollection = (ShapeList<LineShape>) objiStream.readObject();
+    }
+    
+    
 }

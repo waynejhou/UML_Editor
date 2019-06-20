@@ -1,5 +1,6 @@
 package uml_editor.utils;
 
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -7,7 +8,7 @@ import java.util.List;
 
 import uml_editor.views.shapes.BaseShape;
 
-public class ShapeList<T extends BaseShape> {
+public class ShapeList<T extends BaseShape>{
 
     private LinkedList<T> Shapes = new LinkedList<T>();
     private int maxDepth = 0;
@@ -16,6 +17,7 @@ public class ShapeList<T extends BaseShape> {
         return Collections.unmodifiableList(Shapes);
     }
 
+    @SuppressWarnings("unchecked")
     public void addShapes(T... shapes) {
         addShapes(Arrays.asList(shapes));
     }
@@ -27,6 +29,7 @@ public class ShapeList<T extends BaseShape> {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public void setShapes(T... shapes) {
         setShapes(Arrays.asList(shapes));
     }
@@ -36,6 +39,7 @@ public class ShapeList<T extends BaseShape> {
         addShapes(shapes);
     }
     
+    @SuppressWarnings("unchecked")
     public void removeShapes(T... shapes) {
         removeShapes(Arrays.asList(shapes));
     }

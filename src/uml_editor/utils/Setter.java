@@ -24,6 +24,7 @@ public class Setter {
         _Values = values;
     }
 
+    @SuppressWarnings("rawtypes")
     public Class[] getValuesClasses() {
         return Arrays.stream(_Values)
                 .map(x->x.getClass().getSimpleName().contains("$$Lambda$")?x.getClass().getInterfaces()[0] :x.getClass())

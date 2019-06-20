@@ -1,6 +1,5 @@
 package uml_editor.utils.sessions;
 
-import java.awt.Cursor;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -128,7 +127,6 @@ public final class SelectSession extends UMLSession {
     public void mouseDragged(MouseEvent e) {
         
         if (_SelectedShape != null) {// 拖動選擇的物件
-            var o = H.getOrigin();
             var mpt = e.getPoint();
             _SelectedShape.setX((mpt.x - _dragTempPtX) + _draggedElePtX);
             _SelectedShape.setY((mpt.y - _dragTempPtY) + _draggedElePtY);

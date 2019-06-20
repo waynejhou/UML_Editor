@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 import javax.swing.BoxLayout;
 
@@ -32,8 +33,10 @@ import uml_editor.views.shapes.lines.InheritanceLine;
 public class MainWindow extends Frame {
 
     UMLPanel _UmlPanel;
-
+    MainWindow It;
+    
     public MainWindow(){
+        It = this;
         this.setTitle("Wayne UML Editor");
         this.addWindowListener(new WindowAdapter() {
             @Override
@@ -46,7 +49,25 @@ public class MainWindow extends Frame {
         this.setSize(800, 600);
         this.setMenuBar(
                 cr8MenuBar(
-                        cr8Menu("File"),
+                        cr8Menu("File",
+                                cr8MenuItem("Save", e->{
+                                    /*try {
+                                        _UmlPanel.SaveState();
+                                    } catch (IOException e1) {
+                                        e1.printStackTrace();
+                                    }*/
+                                }),
+                                cr8MenuItem("Load", e->{
+                                    /*try {
+                                        _UmlPanel.LoadState();
+                                    } catch (IOException | ClassNotFoundException e1) {
+                                        e1.printStackTrace();
+                                    }*/
+                                }),
+                                cr8MenuItem("Exit", e->{
+                                    MainWindow.this.setVisible(false);
+                                    MainWindow.this.dispose();
+                                })),
                         cr8Menu("Edit",
                                 cr8MenuItem("Group Elements", setAGroup),
                                 cr8MenuItem("Edit Name", showEditNameDialog),
